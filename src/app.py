@@ -2,7 +2,7 @@
 This module takes care of starting the API Server, Loading the DB and Adding the endpoints
 """
 import os
-from flask import Flask, request, jsonify, make_response
+from flask import Flask, request, jsonify, make_response, Blueprint
 from flask_migrate import Migrate
 from flask_swagger import swagger
 from flask_cors import CORS
@@ -11,9 +11,10 @@ from admin import setup_admin
 from models import db, User, Pet, Address
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
-import jwt 
+import jwt
 import datetime
 from functools import wraps
+from routes.mascotas import mascotas
 
 # from models import Person
 
@@ -31,7 +32,7 @@ if db_url is not None:
     )
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
-    
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
@@ -39,6 +40,7 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
+app.register_blueprint(mascotas.app)
 
 
 def token_required(f):
@@ -59,7 +61,7 @@ def token_required(f):
             return jsonify({"message": "token is invalid"})
 
         return f(current_user, *args, **kwargs)
-    
+
     return decorator
 
 
