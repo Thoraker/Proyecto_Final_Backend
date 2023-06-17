@@ -6,9 +6,9 @@ mascotas = Blueprint("mascotas", __name__, url_prefix="/mascotas")
 # Ruta para procesar los datos del formulario reg de mascotas
 
 
-@mascotas.route("/")
-def prueba():
-    return {"mensaje": "prueba"}
+# @mascotas.route("/")
+# def prueba():
+#     return {"mensaje": "prueba"}
 
 
 @mascotas.route("/mascotas", methods=["GET", "POST"])
@@ -27,7 +27,7 @@ def form_pets():
         return jsonify({"mensaje": "Registro de mascota exitoso"}), 201
 
     if request.method == "GET":
-        return {"mensaje": "Form Data Example"}
+        return {"mensaje": "Su GET ha funcionado!"}
 
 
 # @mascotas.route("/registro", methods=["POST"])
@@ -39,18 +39,7 @@ def form_pets():
 #     # filename = secure_filename(image.filename)
 #     # image.save(filename)
 
-#     new_register = Pet_Register(
-#         name=name,
-#         age=age,
-#         specie=especie,
-#         description=description
 
-#     )
-
-#     db.session.add(new_register)
-#     db.session.commit()
-
-#     return jsonify({"mensaje": "Registro de mascota exitoso"}), 201
 
 
 # # Ejemplo: enviar los datos a la API

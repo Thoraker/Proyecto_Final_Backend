@@ -50,7 +50,7 @@ class Pet(db.Model):
     __tablename__ = "pets"
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(30), unique=False, nullable=True)
-    specie = db.Column(db.Integer, unique=False, nullable=True)
+    specie = db.Column(db.String(30), unique=False, nullable=True)
     age = db.Column(db.Integer, unique=False, nullable=True)
     size = db.Column(db.Integer, unique=False, nullable=True)
     need_backyard = db.Column(db.Boolean, unique=False, nullable=True)
@@ -59,7 +59,7 @@ class Pet(db.Model):
 
     pet = db.relationship("User", secondary=owners_pets, back_populates="owner")
 
-    def __init__(self, name, specie, age, size, need_backyard= True, id_origin=None, id_actual=None):
+    def __init__(self, name, specie, age, size, need_backyard=True, id_origin=None, id_actual=None):
         self.name = name
         self.age = age
         self.specie = specie
