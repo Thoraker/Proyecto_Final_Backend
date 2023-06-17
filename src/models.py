@@ -59,8 +59,9 @@ class Pet(db.Model):
 
     pet = db.relationship("User", secondary=owners_pets, back_populates="owner")
 
-    def __init__(self, name, specie, size, need_backyard, id_origin, id_actual):
+    def __init__(self, name, specie, age, size, need_backyard= True, id_origin=None, id_actual=None):
         self.name = name
+        self.age = age
         self.specie = specie
         self.size = size
         self.need_backyard = need_backyard

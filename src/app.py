@@ -40,7 +40,7 @@ MIGRATE = Migrate(app, db)
 db.init_app(app)
 CORS(app)
 setup_admin(app)
-app.register_blueprint(mascotas.app)
+app.register_blueprint(mascotas)
 
 
 def token_required(f):

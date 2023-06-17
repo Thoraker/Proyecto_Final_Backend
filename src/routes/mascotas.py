@@ -1,38 +1,70 @@
-from flask import request, Blueprint
+from flask import request, Blueprint, jsonify
+from models import Pet, db
 
-app = Blueprint("mascotas", __name__, url_prefix="/mascotas")
+
+mascotas = Blueprint("mascotas", __name__, url_prefix="/mascotas")
 # Ruta para procesar los datos del formulario reg de mascotas
 
 
-@app.route("/")
+@mascotas.route("/")
 def prueba():
     return {"mensaje": "prueba"}
 
 
-@app.route("/registro", methods=["POST"])
-def procesar_registro():
-    data
-    nombre = request.form.get("nombre")
-    edad = request.form.get("edad")
-    especie = request.form.get("especie")
-    raza = request.form.get("raza")
-    descripcion = request.form.get("descripcion")
-    imagen = request.files["imagen"]
+@mascotas.route("/mascotas", methods=["GET", "POST"])
+def form_pets():
+    if request.method == "POST":
+        data = request.get_json()
+        new_pet = Pet(
+            name=data["name"],
+            specie=data["specie"],
+            age=data["age"],
+            size=data["size"],
+        )
+        db.session.add(new_pet)
+        db.session.commit()
 
-    # Aquí puedes realizar cualquier validación o procesamiento adicional de los datos
+        return jsonify({"mensaje": "Registro de mascota exitoso"}), 201
 
-    # Ejemplo: enviar los datos a la API
-    url = "http://localhost:8000/animalitos/registrar"  # Reemplaza con la URL de tu API
-    data = {
-        "nombre": nombre,
-        "edad": edad,
-        "especie": especie,
-        "raza": raza,
-        "descripcion": descripcion,
-        # Procesa el archivo de imagen aquí según los requerimientos de tu API
-    }
-    response = requests.post(url, json=data)
+    if request.method == "GET":
+        return {"mensaje": "Form Data Example"}
 
-    # Realiza cualquier manejo de la respuesta de la API según tus necesidades
 
-    return "Registro exitoso"  # Puedes redirigir a otra página o mostrar un mensaje de éxito
+# @mascotas.route("/registro", methods=["POST"])
+# def procesar_registro():
+#     data = request.get_jason()
+
+#
+#     #    Guardar la imagen en el servidor
+#     # filename = secure_filename(image.filename)
+#     # image.save(filename)
+
+#     new_register = Pet_Register(
+#         name=name,
+#         age=age,
+#         specie=especie,
+#         description=description
+
+#     )
+
+#     db.session.add(new_register)
+#     db.session.commit()
+
+#     return jsonify({"mensaje": "Registro de mascota exitoso"}), 201
+
+
+# # Ejemplo: enviar los datos a la API
+# url = "http://localhost:8000/animalitos/registrar"  # Reemplaza con la URL de tu API
+# data = {
+#     "nombre": nombre,
+#     "edad": edad,
+#     "especie": especie,
+#     "raza": raza,
+#     "descripcion": descripcion,
+#     # Procesa el archivo de imagen aquí según los requerimientos de tu API
+# }
+# response = requests.post(url, json=data)
+
+# # Realiza cualquier manejo de la respuesta de la API según tus necesidades
+
+# return "Registro exitoso"  # Puedes redirigir a otra página o mostrar un mensaje de éxito
