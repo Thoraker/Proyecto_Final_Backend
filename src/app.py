@@ -195,7 +195,7 @@ def manage_post(active_user):
         db.session.add(new_post)
         db.session.commit()
         return jsonify({"Response": "Registro exitoso",
-                        "Pet": new_post.serialize()})
+                        "Post": new_post.serialize()})
 
 
 # this only runs if `$ python src/app.py` is executed
