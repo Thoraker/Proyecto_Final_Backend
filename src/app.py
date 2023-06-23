@@ -86,9 +86,8 @@ def handle_hello():
     return (response_body), 200
 
 
-@app.route("/user", methods=["GET", "POST"])
-def manage_user():
-    if request.method == "POST":
+@app.route("/register", methods=["GET", "POST"])
+def register_user():
         data = request.get_json()
         hashed_password = generate_password_hash(data["password"], method="sha256")
         new_user = User(
@@ -106,8 +105,10 @@ def manage_user():
         return jsonify({"Response": "Registro exitoso",
                         "User": new_user.serialize()})
     
-    if request.method == "GET":
-        auth = request.get_json()
+
+@app.route("/login", methods=["GET", "POST"])
+def login_user():
+    auth = request.get_json()
     if not auth["user_name"] or not auth["password"]:
         return make_response("could not verify", 401, {"WWW.Authentication": 'Basic realm: "login required"'})
     user = User.query.filter_by(user_name=auth["user_name"]).first()
@@ -126,58 +127,55 @@ def manage_user():
 @app.route("/address", methods=["GET", "POST"])
 @token_required
 def manage_address(active_user):
-    if request.method == "POST":
-        data = request.get_json()    
-        new_house = Address(
-            street=data["street"],
-            building_number=data["building_number"],
-            department_number=data["department_number"],
-            commune=data["commune"],
-            region=data["region"],
-            has_backyard=data["has_backyard"],
-            habitant= active_user.id,
-        )
-        db.session.add(new_house)
-        db.session.commit()
-        return jsonify({"Response": "Registro exitoso",
-                        "Address": new_house.serialize()})
+    data = request.get_json()    
+    new_house = Address(
+        street=data["street"],
+        building_number=data["building_number"],
+        department_number=data["department_number"],
+        commune=data["commune"],
+        region=data["region"],
+        has_backyard=data["has_backyard"],
+        habitant= active_user.id,
+    )
+    db.session.add(new_house)
+    db.session.commit()
+    return jsonify({"Response": "Registro exitoso",
+                    "Address": new_house.serialize()})
 
 
 @app.route("/pet", methods=["GET", "POST"])
 @token_required
 def manage_pet(active_user):
-    if request.method == "POST":
-        data = request.get_json()
-        new_pet = Pet(
-            name=data["name"],
-            specie=data["specie"],
-            age=data["age"],
-            size=data["size"],
-            photo_url=data["photo_url"],
-            need_backyard=data["need_backyard"]
-        )
-        new_pet.add_owner(active_user)
-        db.session.add(new_pet)
-        db.session.commit()
-        return jsonify({"Response": "Registro exitoso",
-                        "Pet": new_pet.serialize()})
+    data = request.get_json()
+    new_pet = Pet(
+        name=data["name"],
+        specie=data["specie"],
+        age=data["age"],
+        size=data["size"],
+        photo_url=data["photo_url"],
+        need_backyard=data["need_backyard"]
+    )
+    new_pet.add_owner(active_user)
+    db.session.add(new_pet)
+    db.session.commit()
+    return jsonify({"Response": "Registro exitoso",
+                    "Pet": new_pet.serialize()})
 
 
 @app.route("/portfolio", methods=["GET, POST"])
 @token_required
 def manage_photo():
-    if request.method == "POST":
-        data = request.get_json()
+    data = request.get_json()
 
-        new_photo = Portfolio(
-            url=data["url"],
-            pet_id=data["pet_id"],
-        )
+    new_photo = Portfolio(
+        url=data["url"],
+        pet_id=data["pet_id"],
+    )
 
-        db.session.add(new_photo)
-        db.session.commit()
-        return jsonify({"Response": "Registro exitoso",
-                        "Photo": new_photo.serialize()})
+    db.session.add(new_photo)
+    db.session.commit()
+    return jsonify({"Response": "Registro exitoso",
+                    "Photo": new_photo.serialize()})
     
 
 @app.route("/post", methods=["GET", "POST"])

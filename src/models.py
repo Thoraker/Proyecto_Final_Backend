@@ -64,7 +64,6 @@ class User(db.Model):
 class Pet(db.Model):
     __tablename__ = "pets"
     id = db.Column(db.Integer, primary_key=True)
-    public_id = db.Column(db.String(50), unique=True, nullable=False)
     name = db.Column(db.String(30), unique=False, nullable=True)
     specie = db.Column(db.Integer, unique=False, nullable=True)
     age = db.Column(db.String(20), unique=False, nullable=True)
@@ -76,8 +75,7 @@ class Pet(db.Model):
     photos = db.relationship("Portfolio", back_populates="pets")
     posts = db.relationship("Post", back_populates="anser")
 
-    def __init__(self, public_id, name, specie, age, size, photo_url, need_backyard):
-        self.public_id = public_id
+    def __init__(self, name, specie, age, size, photo_url, need_backyard):
         self.name = name
         self.specie = specie
         self.age = age
