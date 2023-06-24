@@ -97,7 +97,7 @@ def register_user():
             password=hashed_password,
             first_name=data["first_name"],
             last_name=data["last_name"],
-            url=data["url"],
+            avatar=data["avatar"],
             donor=data["donor"]
         )
         db.session.add(new_user)

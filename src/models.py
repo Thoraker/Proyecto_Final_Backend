@@ -20,21 +20,21 @@ class User(db.Model):
     password = db.Column(db.String(100), unique=False, nullable=False)
     first_name = db.Column(db.String(50), unique=False, nullable=False)
     last_name = db.Column(db.String(50), unique=False, nullable=False)
-    url = db.Column(db.String(100), unique=False, nullable=True)
+    avatar = db.Column(db.String(100), unique=False, nullable=True)
     donor = db.Column(db.Boolean(), unique=False, nullable=False)
 
     pets = db.relationship("Pet", secondary=owners_pets, back_populates="owners")
     houses = db.relationship("Address", back_populates="home_owner")
     posted = db.relationship("Post", back_populates="poster")
 
-    def __init__(self, public_id, user_name, email, password, first_name, last_name, url, donor):
+    def __init__(self, public_id, user_name, email, password, first_name, last_name, avatar, donor):
         self.public_id = public_id
         self.user_name = user_name
         self.email = email
         self.password = password
         self.first_name = first_name
         self.last_name = last_name
-        self.url = url
+        self.avatar = avatar
         self.donor = donor
 
     def __repr__(self):
@@ -44,14 +44,14 @@ class User(db.Model):
         return {
             "Usuario": self.user_name,
             "Email": self.email,
-            "Avatar": self.url,
+            "Avatar": self.avatar,
         }
 
     def serialize_extended(self):
         return {
             "Usuario": self.user_name,
             "Email": self.email,
-            "Avatar": self.url,
+            "Avatar": self.avatar,
             "Dador": self.donor,
             "Mascotas": [pet.serialize() for pet in self.pets],
             "Direcciones": [house.serialize() for house in self.houses],
