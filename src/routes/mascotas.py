@@ -6,9 +6,9 @@ mascotas = Blueprint("mascotas", __name__, url_prefix="/mascotas")
 # Ruta para procesar los datos del formulario reg de mascotas
 
 
-@mascotas.route("/")
-def prueba():
-    return {"mensaje": "prueba"}
+# @mascotas.route("/")
+# def prueba():
+#     return {"mensaje": "prueba"}
 
 
 @mascotas.route("/mascotas", methods=["GET", "POST"])
@@ -28,7 +28,7 @@ def form_pets():
         return jsonify({"mensaje": "Registro de mascota exitoso"}), 201
 
     if request.method == "GET":
-        return {"mensaje": "Form Data Example"}
+        return {"mensaje": "Su GET ha funcionado!"}
 
 
 # @mascotas.route("/registro", methods=["POST"])
