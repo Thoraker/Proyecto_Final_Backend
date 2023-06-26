@@ -16,10 +16,11 @@ def form_pets():
     if request.method == "POST":
         data = request.get_json()
         new_pet = Pet(
-            name=data["name"],
-            specie=data["specie"],
-            age=data["age"],
-            size=data["size"],
+            name=data["nombre"],
+            specie=data["especie"],
+            age=data["edad"],
+            size=data["tamano"],
+
         )
         db.session.add(new_pet)
         db.session.commit()
@@ -45,12 +46,7 @@ def form_pets():
 #         specie=especie,
 #         description=description
 
-#     )
-
-#     db.session.add(new_register)
-#     db.session.commit()
-
-#     return jsonify({"mensaje": "Registro de mascota exitoso"}), 201
+#   
 
 
 # # Ejemplo: enviar los datos a la API
