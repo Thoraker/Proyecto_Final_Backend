@@ -88,7 +88,27 @@ def handle_hello():
 @app.route("/register", methods=["GET", "POST"])
 def register_user():
     data = request.get_json()
-    hashed_password = generate_password_hash(data["password"], method="scrypt")
+    hashed_password = generate_password_hash(data["password"], method="sha256")
+    new_user = User(
+        public_id=uuid.uuid4(),
+        user_name=data["user_name"],
+        email=data["email"],
+        password=hashed_password,
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+        avatar=data["avatar"],
+        donor=data["donor"],
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize()})
+
+
+@app.route("/register", methods=["PUT"])
+@token_required
+def modify_user():
+    data = request.get_json()
+    hashed_password = generate_password_hash(data["password"], method="sha256")
     new_user = User(
         public_id=uuid.uuid4(),
         user_name=data["user_name"],
@@ -122,7 +142,13 @@ def login_user():
             },
             app.config["SECRET_KEY"],
         )
-        return jsonify({"user": user.user_name, "token": token, "avatar": user.avatar})
+        print(User.serialize_extended)
+        return jsonify(
+            {
+                "User": user.serialize_extended(),
+                "Token": token,
+            }
+        )
     return make_response(
         "could not verify", 401, {"WWW.Authentication": 'Basic realm: "login required"'}
     )

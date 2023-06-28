@@ -17,7 +17,7 @@ class User(db.Model):
     public_id = db.Column(db.String(50), unique=True, nullable=False)
     user_name = db.Column(db.String(50), unique=True, nullable=False)
     email = db.Column(db.String(50), unique=True, nullable=False)
-    password = db.Column(db.String(100), unique=False, nullable=False)
+    password = db.Column(db.String(150), unique=False, nullable=False)
     first_name = db.Column(db.String(50), unique=False, nullable=False)
     last_name = db.Column(db.String(50), unique=False, nullable=False)
     avatar = db.Column(db.String(100), unique=False, nullable=True)
@@ -61,6 +61,8 @@ class User(db.Model):
         return {
             "Usuario": self.user_name,
             "Email": self.email,
+            "Nombre": self.first_name,
+            "Apellido": self.last_name,
             "Avatar": self.avatar,
             "Dador": self.donor,
             "Mascotas": [pet.serialize() for pet in self.pets],
