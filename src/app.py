@@ -11,7 +11,7 @@ from admin import setup_admin
 from models import db, User, Pet, Address, Portfolio, Post
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
-import jwt 
+import jwt
 import datetime
 from functools import wraps
 
@@ -33,7 +33,7 @@ if db_url is not None:
     )
 else:
     app.config["SQLALCHEMY_DATABASE_URI"] = "sqlite:////tmp/test.db"
-    
+
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
 
@@ -46,24 +46,23 @@ setup_admin(app)
 def token_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
-
         token = None
 
         if "Authorization" in request.headers:
-            token = request.headers["Authorization"].split(' ')[1]
+            token = request.headers["Authorization"].split(" ")[1]
 
         if not token:
             return jsonify({"message": "a valid token is missing"})
 
         try:
-            data = jwt.decode(token, app.config["SECRET_KEY"], algorithms=['HS256'])
+            data = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
             active_user = User.query.filter_by(public_id=data["public_id"]).first()
 
         except Exception as e:  # Capture the exception
             return jsonify({"message": "token is invalid", "error": str(e)})
 
         return f(active_user, *args, **kwargs)
-    
+
     return decorator
 
 
@@ -88,31 +87,34 @@ def handle_hello():
 
 @app.route("/register", methods=["GET", "POST"])
 def register_user():
-        data = request.get_json()
-        hashed_password = generate_password_hash(data["password"], method="sha256")
-        new_user = User(
-            public_id=uuid.uuid4(),
-            user_name=data["user_name"],
-            email=data["email"],
-            password=hashed_password,
-            first_name=data["first_name"],
-            last_name=data["last_name"],
-            avatar=data["avatar"],
-            donor=data["donor"]
-        )
-        db.session.add(new_user)
-        db.session.commit()
-        return jsonify({"Response": "Registro exitoso",
-                        "User": new_user.serialize()})
-    
+    data = request.get_json()
+    hashed_password = generate_password_hash(data["password"], method="scrypt")
+    new_user = User(
+        public_id=uuid.uuid4(),
+        user_name=data["user_name"],
+        email=data["email"],
+        password=hashed_password,
+        first_name=data["first_name"],
+        last_name=data["last_name"],
+        avatar=data["avatar"],
+        donor=data["donor"],
+    )
+    db.session.add(new_user)
+    db.session.commit()
+    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize()})
+
 
 @app.route("/login", methods=["GET", "POST"])
 def login_user():
     auth = request.get_json()
     if not auth["user_name"] or not auth["password"]:
-        return make_response("could not verify", 401, {"WWW.Authentication": 'Basic realm: "login required"'})
+        return make_response(
+            "could not verify",
+            401,
+            {"WWW.Authentication": 'Basic realm: "login required"'},
+        )
     user = User.query.filter_by(user_name=auth["user_name"]).first()
-    if check_password_hash(user.password, auth['password']):
+    if check_password_hash(user.password, auth["password"]):
         token = jwt.encode(
             {
                 "public_id": user.public_id,
@@ -120,14 +122,16 @@ def login_user():
             },
             app.config["SECRET_KEY"],
         )
-        return jsonify({"token": token})
-    return make_response("could not verify", 401, {"WWW.Authentication": 'Basic realm: "login required"'})
+        return jsonify({"user": user.user_name, "token": token, "avatar": user.avatar})
+    return make_response(
+        "could not verify", 401, {"WWW.Authentication": 'Basic realm: "login required"'}
+    )
 
 
 @app.route("/address", methods=["GET", "POST"])
 @token_required
 def manage_address(active_user):
-    data = request.get_json()    
+    data = request.get_json()
     new_house = Address(
         street=data["street"],
         building_number=data["building_number"],
@@ -135,12 +139,11 @@ def manage_address(active_user):
         commune=data["commune"],
         region=data["region"],
         has_backyard=data["has_backyard"],
-        habitant= active_user.id,
+        habitant=active_user.id,
     )
     db.session.add(new_house)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso",
-                    "Address": new_house.serialize()})
+    return jsonify({"Response": "Registro exitoso", "Address": new_house.serialize()})
 
 
 @app.route("/pet", methods=["GET", "POST"])
@@ -153,13 +156,12 @@ def manage_pet(active_user):
         age=data["age"],
         size=data["size"],
         photo_url=data["photo_url"],
-        need_backyard=data["need_backyard"]
+        need_backyard=data["need_backyard"],
     )
     new_pet.add_owner(active_user)
     db.session.add(new_pet)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso",
-                    "Pet": new_pet.serialize()})
+    return jsonify({"Response": "Registro exitoso", "Pet": new_pet.serialize()})
 
 
 @app.route("/portfolio", methods=["GET, POST"])
@@ -174,9 +176,8 @@ def manage_photo():
 
     db.session.add(new_photo)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso",
-                    "Photo": new_photo.serialize()})
-    
+    return jsonify({"Response": "Registro exitoso", "Photo": new_photo.serialize()})
+
 
 @app.route("/post", methods=["GET", "POST"])
 @token_required
@@ -184,7 +185,7 @@ def manage_post(active_user):
     if request.method == "POST":
         data = request.get_json()
         new_post = Post(
-            reference_post_id=data['reference_post_id'],
+            reference_post_id=data["reference_post_id"],
             header=data["header"],
             body=data["body"],
             pet_id=data["pet_id"],
@@ -192,8 +193,7 @@ def manage_post(active_user):
         )
         db.session.add(new_post)
         db.session.commit()
-        return jsonify({"Response": "Registro exitoso",
-                        "Post": new_post.serialize()})
+        return jsonify({"Response": "Registro exitoso", "Post": new_post.serialize()})
 
 
 # this only runs if `$ python src/app.py` is executed
