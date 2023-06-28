@@ -1,11 +1,11 @@
 {
     "editor.formatOnSave": true,
-    "editor.defaultFormatter": "esbenp.prettier-vscode",
+    "editor.defaultFormatter":"ms-python.black-formatter",
     "workbench.editorAssociations": {   
         "*.md": "vscode.markdown.preview.editor"
     },
     "[python]": {
         "editor.defaultFormatter": "ms-python.black-formatter"
     },
-    "python.formatting.provider": "none"
+    "python.formatting.provider":"black"
 }
