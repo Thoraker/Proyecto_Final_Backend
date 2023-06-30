@@ -80,19 +80,17 @@ class Pet(db.Model):
     specie = db.Column(db.Integer, unique=False, nullable=True)
     age = db.Column(db.String(20), unique=False, nullable=True)
     size = db.Column(db.Integer, unique=False, nullable=True)
-    photo_url = db.Column(db.String(100), unique=False, nullable=True)
     need_backyard = db.Column(db.Boolean, unique=False, nullable=True)
 
     owners = db.relationship("User", secondary=owners_pets, back_populates="pets")
-    photos = db.relationship("Portfolio", back_populates="pets")
+    photos = db.relationship("Photo", back_populates="pets")
     posts = db.relationship("Post", back_populates="anser")
 
-    def __init__(self, name, specie, age, size, photo_url, need_backyard):
+    def __init__(self, name, specie, age, size, need_backyard):
         self.name = name
         self.specie = specie
         self.age = age
         self.size = size
-        self.photo_url = photo_url
         self.need_backyard = need_backyard
 
     def __repr__(self):
@@ -104,6 +102,7 @@ class Pet(db.Model):
             "Especie": self.specie,
             "Tamano": self.size,
             "Necesita Patio": self.need_backyard,
+            "Fotos": [photo.serialize() for photo in self.photos],
         }
 
     def add_owner(self, user):
@@ -120,7 +119,7 @@ class Address(db.Model):
     region = db.Column(db.Integer, unique=False, nullable=True)
     has_backyard = db.Column(db.Boolean, unique=False, nullable=True)
     habitant = db.Column(
-        db.Integer, db.ForeignKey("users.id"), unique=True, nullable=True
+        db.Integer, db.ForeignKey("users.id"), unique=False, nullable=True
     )
 
     home_owner = db.relationship("User", back_populates="houses")
@@ -157,20 +156,29 @@ class Address(db.Model):
         }
 
 
-class Portfolio(db.Model):
-    __tablename__ = "portfolios"
+class Photo(db.Model):
+    __tablename__ = "photos"
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.String(100), unique=True, nullable=False)
-    pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"))
+    url = db.Column(db.String(200), unique=True, nullable=False)
+    pet_id = db.Column(
+        db.Integer, db.ForeignKey("pets.id"), unique=False, nullable=True
+    )
 
     pets = db.relationship("Pet", back_populates="photos")
 
-    def __init__(self, url, pet_id):
+    def __init__(
+        self,
+        url,
+        pet_id,
+    ):
         self.url = url
         self.pet_id = pet_id
 
     def __repr__(self):
-        return f'Portfolio("{self.url}","{self.pet_id}")'
+        return f'Photo("{self.url}")'
+
+    def serialize(self):
+        return {"url": self.url}
 
 
 class Post(db.Model):

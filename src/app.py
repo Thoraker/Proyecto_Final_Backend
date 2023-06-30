@@ -8,7 +8,7 @@ from flask_swagger import swagger
 from flask_cors import CORS
 from utils import APIException, generate_sitemap
 from admin import setup_admin
-from models import db, User, Pet, Address, Portfolio, Post
+from models import db, User, Pet, Address, Photo, Post
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
 import jwt
@@ -181,7 +181,6 @@ def manage_pet(active_user):
         specie=data["specie"],
         age=data["age"],
         size=data["size"],
-        photo_url=data["photo_url"],
         need_backyard=data["need_backyard"],
     )
     new_pet.add_owner(active_user)
@@ -190,12 +189,12 @@ def manage_pet(active_user):
     return jsonify({"Response": "Registro exitoso", "Pet": new_pet.serialize()})
 
 
-@app.route("/portfolio", methods=["GET, POST"])
+@app.route("/photo", methods=["GET", "POST"])
 @token_required
 def manage_photo():
     data = request.get_json()
 
-    new_photo = Portfolio(
+    new_photo = Photo(
         url=data["url"],
         pet_id=data["pet_id"],
     )
