@@ -11,13 +11,13 @@ from admin import setup_admin
 from models import db, User, Pet, Address, Photo, Post
 from werkzeug.security import generate_password_hash, check_password_hash
 import uuid
+from flask_cors import CORS
 import jwt
 import datetime
 from functools import wraps
 
-# from models import Person
-
 app = Flask(__name__)
+CORS(app)
 app.url_map.strict_slashes = False
 
 db_key = os.getenv("SECRET_KEY")
@@ -25,7 +25,6 @@ db_url = os.getenv("DATABASE_URL")
 db_imageshack_key = os.getenv("IMAGESHACK_KEY")
 
 app.config["SECRET_KEY"] = db_key
-
 
 if db_url is not None:
     app.config["SQLALCHEMY_DATABASE_URI"] = db_url.replace(
@@ -191,14 +190,9 @@ def manage_pet(active_user):
 
 @app.route("/photo", methods=["GET", "POST"])
 @token_required
-def manage_photo():
+def manage_pictures(self):
     data = request.get_json()
-
-    new_photo = Photo(
-        url=data["url"],
-        pet_id=data["pet_id"],
-    )
-
+    new_photo = Photo(url=data["url"], pet_id=data["pet_id"])
     db.session.add(new_photo)
     db.session.commit()
     return jsonify({"Response": "Registro exitoso", "Photo": new_photo.serialize()})

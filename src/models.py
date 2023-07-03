@@ -59,6 +59,7 @@ class User(db.Model):
 
     def serialize_extended(self):
         return {
+            "id": self.id,
             "Usuario": self.user_name,
             "Email": self.email,
             "Nombre": self.first_name,
@@ -98,6 +99,7 @@ class Pet(db.Model):
 
     def serialize(self):
         return {
+            "id": self.id,
             "Nombre": self.name,
             "Especie": self.specie,
             "Tamano": self.size,
@@ -147,6 +149,7 @@ class Address(db.Model):
 
     def serialize(self):
         return {
+            "id": self.id,
             "Calle": self.street,
             "Numero": self.building_number,
             "Departamento": self.department_number,
@@ -166,11 +169,7 @@ class Photo(db.Model):
 
     pets = db.relationship("Pet", back_populates="photos")
 
-    def __init__(
-        self,
-        url,
-        pet_id,
-    ):
+    def __init__(self, url, pet_id):
         self.url = url
         self.pet_id = pet_id
 
@@ -178,7 +177,7 @@ class Photo(db.Model):
         return f'Photo("{self.url}")'
 
     def serialize(self):
-        return {"url": self.url}
+        return {"id": self.id, "url": self.url}
 
 
 class Post(db.Model):
@@ -205,6 +204,7 @@ class Post(db.Model):
 
     def serialize(self):
         return {
+            "id": self.id,
             "reference_post_id": self.reference_post_id,
             "header": self.header,
             "body": self.body,
