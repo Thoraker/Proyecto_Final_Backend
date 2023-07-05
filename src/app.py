@@ -1,6 +1,3 @@
-"""
-This module takes care of starting the API Server, Loading the DB and Adding the endpoints
-"""
 import os
 from flask import Flask, request, jsonify, make_response
 from flask_migrate import Migrate
@@ -35,47 +32,33 @@ else:
 
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
 
-
 MIGRATE = Migrate(app, db)
 db.init_app(app)
-CORS(app)
 setup_admin(app)
-
 
 def token_required(f):
     @wraps(f)
     def decorator(*args, **kwargs):
         token = None
-
         if "Authorization" in request.headers:
             token = request.headers["Authorization"].split(" ")[1]
-
         if not token:
             return jsonify({"message": "a valid token is missing"})
-
         try:
             data = jwt.decode(token, app.config["SECRET_KEY"], algorithms=["HS256"])
             active_user = User.query.filter_by(public_id=data["public_id"]).first()
-
         except Exception as e:  # Capture the exception
             return jsonify({"message": "token is invalid", "error": str(e)})
-
         return f(active_user, *args, **kwargs)
-
     return decorator
 
-
-# Handle/serialize errors like a JSON object
 @app.errorhandler(APIException)
 def handle_invalid_usage(error):
     return jsonify(error.to_dict()), error.status_code
 
-
-# generate sitemap with all your endpoints
 @app.route("/")
 def sitemap():
     return generate_sitemap(app)
-
 
 @app.route("/users", methods=["GET"])
 def handle_hello():
@@ -83,13 +66,10 @@ def handle_hello():
     response_body = jsonify([user.serialize_extended() for user in users])
     return (response_body), 200
 
-
 @app.route("/pets", methods=["GET"])
 def get_available_pets():
     pets = Pet.query.filter(Pet.for_adoption == True).all()
-    response_body = jsonify([pet.serialize() for pet in pets])
-    return (response_body), 200
-
+    return jsonify([pet.serialize() for pet in pets])
 
 @app.route("/register", methods=["GET", "POST"])
 def register_user():
@@ -106,8 +86,7 @@ def register_user():
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize_full()})
-
+    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize_extended()})
 
 @app.route("/register", methods=["PUT"])
 @token_required
@@ -126,8 +105,7 @@ def modify_user():
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize_full()})
-
+    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize_extended()})
 
 @app.route("/login", methods=["GET", "POST"])
 def login_user():
@@ -158,7 +136,6 @@ def login_user():
         "could not verify", 401, {"WWW.Authentication": 'Basic realm: "login required"'}
     )
 
-
 @app.route("/address", methods=["GET", "POST"])
 @token_required
 def manage_address(active_user):
@@ -174,8 +151,7 @@ def manage_address(active_user):
     )
     db.session.add(new_house)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso", "Address": new_house.serialize()})
-
+    return jsonify({"Response": "Registro exitoso", "Address": new_house.serialize(), "User": active_user.serialize_address()})
 
 @app.route("/pet", methods=["GET", "POST"])
 @token_required
@@ -189,22 +165,19 @@ def manage_pet(active_user):
         need_backyard=data["need_backyard"],
         for_adoption=data["for_adoption"],
     )
-    
     new_pet.add_owner(active_user)
     db.session.add(new_pet)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso", "Pet": new_pet.serialize()})
-
+    return jsonify({"Response": "Registro exitoso", "Pet": new_pet.serialize(), "User": active_user.serialize_pet()})
 
 @app.route("/photo", methods=["GET", "POST"])
 @token_required
-def manage_pictures(self):
+def manage_pictures(active_user):
     data = request.get_json()
     new_photo = Photo(url=data["url"], pet_id=data["pet_id"])
     db.session.add(new_photo)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso", "Photo": new_photo.serialize()})
-
+    return jsonify({"Response": "Registro exitoso", "Photo": new_photo.serialize(), "User": active_user.serialize_pet()})
 
 @app.route("/post", methods=["GET", "POST"])
 @token_required
@@ -213,8 +186,8 @@ def manage_post(active_user):
         data = request.get_json()
         new_post = Post(
             reference_post_id=data["reference_post_id"],
-            header=data["header"],
-            body=data["body"],
+            title=data["title"],
+            message=data["message"],
             pet_id=data["pet_id"],
             user_id=active_user.id,
         )
@@ -222,8 +195,6 @@ def manage_post(active_user):
         db.session.commit()
         return jsonify({"Response": "Registro exitoso", "Post": new_post.serialize()})
 
-
-# this only runs if `$ python src/app.py` is executed
 if __name__ == "__main__":
     PORT = int(os.environ.get("PORT", 3000))
     app.run(host="0.0.0.0", port=PORT, debug=False)
