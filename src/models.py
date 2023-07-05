@@ -21,7 +21,6 @@ class User(db.Model):
     first_name = db.Column(db.String(50), unique=False, nullable=False)
     last_name = db.Column(db.String(50), unique=False, nullable=False)
     avatar = db.Column(db.String(100), unique=False, nullable=True)
-    donor = db.Column(db.Boolean(), unique=False, nullable=True)
 
     pets = db.relationship("Pet", secondary=owners_pets, back_populates="owners")
     houses = db.relationship("Address", back_populates="home_owner")
@@ -36,7 +35,6 @@ class User(db.Model):
         first_name,
         last_name,
         avatar,
-        donor,
     ):
         self.public_id = public_id
         self.user_name = user_name
@@ -45,7 +43,6 @@ class User(db.Model):
         self.first_name = first_name
         self.last_name = last_name
         self.avatar = avatar
-        self.donor = donor
 
     def __repr__(self):
         return f'User("{self.id}")'
@@ -56,6 +53,17 @@ class User(db.Model):
             "Email": self.email,
             "Avatar": self.avatar,
         }
+    
+    def serialize_full(self):
+        return {
+            "id": self.id,
+            "Usuario": self.user_name,
+            "Email": self.email,
+            "Nombre": self.first_name,
+            "Apellido": self.last_name,
+            "Avatar": self.avatar,
+            "Direcciones": [house.serialize() for house in self.houses],
+        }
 
     def serialize_extended(self):
         return {
@@ -65,34 +73,32 @@ class User(db.Model):
             "Nombre": self.first_name,
             "Apellido": self.last_name,
             "Avatar": self.avatar,
-            "Dador": self.donor,
             "Mascotas": [pet.serialize() for pet in self.pets],
             "Direcciones": [house.serialize() for house in self.houses],
         }
 
-    def get_all_users(self):
-        return self._users
-
-
+    
 class Pet(db.Model):
     __tablename__ = "pets"
     id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(30), unique=False, nullable=True)
+    name = db.Column(db.String(100), unique=False, nullable=True)
     specie = db.Column(db.Integer, unique=False, nullable=True)
-    age = db.Column(db.String(20), unique=False, nullable=True)
+    age = db.Column(db.String(100), unique=False, nullable=True)
     size = db.Column(db.Integer, unique=False, nullable=True)
     need_backyard = db.Column(db.Boolean, unique=False, nullable=True)
+    for_adoption = db.Column(db.Boolean, unique=False, nullable=True)
 
     owners = db.relationship("User", secondary=owners_pets, back_populates="pets")
     photos = db.relationship("Photo", back_populates="pets")
     posts = db.relationship("Post", back_populates="anser")
 
-    def __init__(self, name, specie, age, size, need_backyard):
+    def __init__(self, name, specie, age, size, need_backyard, for_adoption):
         self.name = name
         self.specie = specie
         self.age = age
         self.size = size
         self.need_backyard = need_backyard
+        self.for_adoption = for_adoption
 
     def __repr__(self):
         return f'Pet("{self.name}","{self.specie})'
@@ -104,9 +110,12 @@ class Pet(db.Model):
             "Especie": self.specie,
             "Tamano": self.size,
             "Necesita Patio": self.need_backyard,
+            "En_Adopcion": self.for_adoption,
             "Fotos": [photo.serialize() for photo in self.photos],
+            "Dueño": [owner.serialize_address() for owner in self.owners],
+            "Mensajes": [post.serialize() for post in self.posts],
         }
-
+    
     def add_owner(self, user):
         self.owners.append(user)
 
@@ -114,10 +123,10 @@ class Pet(db.Model):
 class Address(db.Model):
     __tablename__ = "addresses"
     id = db.Column(db.Integer, primary_key=True)
-    street = db.Column(db.String(30), unique=False, nullable=False)
+    street = db.Column(db.String(100), unique=False, nullable=False)
     building_number = db.Column(db.Integer, unique=False, nullable=False)
     department_number = db.Column(db.Integer, unique=False, nullable=True)
-    commune = db.Column(db.Integer, unique=False, nullable=False)
+    commune = db.Column(db.String(100), unique=False, nullable=False)
     region = db.Column(db.Integer, unique=False, nullable=True)
     has_backyard = db.Column(db.Boolean, unique=False, nullable=True)
     habitant = db.Column(
@@ -184,7 +193,7 @@ class Post(db.Model):
     __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True)
     reference_post_id = db.Column(db.Integer, unique=False, nullable=True)
-    header = db.Column(db.String(50), unique=False, nullable=False)
+    header = db.Column(db.String(100), unique=False, nullable=False)
     body = db.Column(db.String(500), unique=False, nullable=False)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))

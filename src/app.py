@@ -84,6 +84,13 @@ def handle_hello():
     return (response_body), 200
 
 
+@app.route("/pets", methods=["GET"])
+def get_available_pets():
+    pets = Pet.query.filter(Pet.for_adoption == True).all()
+    response_body = jsonify([pet.serialize() for pet in pets])
+    return (response_body), 200
+
+
 @app.route("/register", methods=["GET", "POST"])
 def register_user():
     data = request.get_json()
@@ -96,11 +103,10 @@ def register_user():
         first_name=data["first_name"],
         last_name=data["last_name"],
         avatar=data["avatar"],
-        donor=data["donor"],
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize()})
+    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize_full()})
 
 
 @app.route("/register", methods=["PUT"])
@@ -120,7 +126,7 @@ def modify_user():
     )
     db.session.add(new_user)
     db.session.commit()
-    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize()})
+    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize_full()})
 
 
 @app.route("/login", methods=["GET", "POST"])
@@ -181,7 +187,9 @@ def manage_pet(active_user):
         age=data["age"],
         size=data["size"],
         need_backyard=data["need_backyard"],
+        for_adoption=data["for_adoption"],
     )
+    
     new_pet.add_owner(active_user)
     db.session.add(new_pet)
     db.session.commit()
