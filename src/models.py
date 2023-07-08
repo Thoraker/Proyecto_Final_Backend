@@ -138,6 +138,9 @@ class Pet(db.Model):
     def add_owner(self, user):
         self.owners.append(user)
 
+    def add_post(self, post):
+        self.posts.append(post)
+
 class Address(db.Model):
     __tablename__ = "addresses"
     id = db.Column(db.Integer, primary_key=True)
@@ -203,28 +206,24 @@ class Post(db.Model):
     __tablename__ = "posts"
     id = db.Column(db.Integer, primary_key=True)
     reference_post_id = db.Column(db.Integer, unique=False, nullable=True)
-    title = db.Column(db.String(100), unique=False, nullable=False)
     message = db.Column(db.String(500), unique=False, nullable=False)
     pet_id = db.Column(db.Integer, db.ForeignKey("pets.id"))
     user_id = db.Column(db.Integer, db.ForeignKey("users.id"))
     anser = db.relationship("Pet", back_populates="posts")
     poster = db.relationship("User", back_populates="posted")
 
-    def __init__(self, reference_post_id, title, message, pet_id, user_id):
+    def __init__(self, reference_post_id, message, user_id):
         self.reference_post_id = reference_post_id
-        self.title = title
         self.message = message
-        self.pet_id = pet_id
         self.user_id = user_id
 
     def __repr__(self):
-        return f'Post("{self.title}","{self.pet_id}, "{self.user_id}")'
+        return f'Post("{self.message}","{self.pet_id}, "{self.user_id}")'
 
     def serialize(self):
         return {
             "id": self.id,
-            "Mensaje_Origen": self.reference_post_id,
-            "Titulo": self.title,
+            "Id_Mensaje_Origen": self.reference_post_id,
             "Mensaje": self.message,
             "Id_Mascota": self.pet_id,
             "Id_Usuario": self.user_id,

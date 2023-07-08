@@ -88,25 +88,6 @@ def register_user():
     db.session.commit()
     return jsonify({"Response": "Registro exitoso", "User": new_user.serialize_extended()})
 
-@app.route("/register", methods=["PUT"])
-@token_required
-def modify_user():
-    data = request.get_json()
-    hashed_password = generate_password_hash(data["password"], method="sha256")
-    new_user = User(
-        public_id=uuid.uuid4(),
-        user_name=data["user_name"],
-        email=data["email"],
-        password=hashed_password,
-        first_name=data["first_name"],
-        last_name=data["last_name"],
-        avatar=data["avatar"],
-        donor=data["donor"],
-    )
-    db.session.add(new_user)
-    db.session.commit()
-    return jsonify({"Response": "Registro exitoso", "User": new_user.serialize_extended()})
-
 @app.route("/login", methods=["GET", "POST"])
 def login_user():
     auth = request.get_json()
@@ -166,6 +147,12 @@ def manage_pet(active_user):
         for_adoption=data["for_adoption"],
     )
     new_pet.add_owner(active_user)
+    new_post = Post(
+        reference_post_id=None,
+        message=data["message"],
+        user_id=active_user.id
+    )
+    new_pet.add_post(new_post)
     db.session.add(new_pet)
     db.session.commit()
     return jsonify({"Response": "Registro exitoso", "Pet": new_pet.serialize(), "User": active_user.serialize_pet()})
@@ -182,11 +169,9 @@ def manage_pictures(active_user):
 @app.route("/post", methods=["GET", "POST"])
 @token_required
 def manage_post(active_user):
-    if request.method == "POST":
         data = request.get_json()
         new_post = Post(
             reference_post_id=data["reference_post_id"],
-            title=data["title"],
             message=data["message"],
             pet_id=data["pet_id"],
             user_id=active_user.id,
